@@ -66,10 +66,10 @@ export const register = async (req, res) => {
 
 
 export const login = async(req, res) => {
-    const { Name, password } = req.body;
+    const { Name, Password } = req.body;
 
     // Validate user input
-    if (!Name || !password) {
+    if (!Name || !Password) {
         return res.status(400).json({ error: 'Invalid input data' });
     }
 
@@ -85,7 +85,7 @@ export const login = async(req, res) => {
             return res.status(401).json({ error: 'Authentication failed. Wrong credentials' });
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(Password, user.password);
 
         if (!passwordMatch) {
             return res.status(401).json({ error: 'Authentication failed. Wrong credentials' });
