@@ -64,8 +64,7 @@ export const register = async (req, res) => {
     }
 };
 
-
-export const login = async(req, res) => {
+export const login = async (req, res) => {
     const { Name, Password } = req.body;
 
     // Validate user input
@@ -79,15 +78,31 @@ export const login = async(req, res) => {
             .request()
             .input('Name', sql.VarChar, Name)
             .query('SELECT * FROM Students WHERE Name=@Name');
-        const user = result.recordset[0];
 
-        if (!user) {
+        // Debugging log to check the result from SQL query
+        console.log('SQL Query Result:', result);
+
+        if (result.recordset.length === 0) {
+            console.log('No user found with the given name:', Name);
             return res.status(401).json({ error: 'Authentication failed. Wrong credentials' });
         }
 
-        const passwordMatch = await bcrypt.compare(Password, user.password);
+        const user = result.recordset[0];
+
+        // Ensure the user object and password field exist
+        if (!user || !user.Password) {
+            console.log('User or password field is missing:', user);
+            return res.status(401).json({ error: 'Authentication failed. Wrong credentials' });
+        }
+
+        // Debugging logs to check password values
+        console.log('Plain text password:', Password);
+        console.log('Hashed password from database:', user.Password);
+
+        const passwordMatch = await bcrypt.compare(Password, user.Password);
 
         if (!passwordMatch) {
+            console.log('Passwords do not match');
             return res.status(401).json({ error: 'Authentication failed. Wrong credentials' });
         }
 
@@ -101,7 +116,7 @@ export const login = async(req, res) => {
         return res.status(200).json({
             Name: user.Name,
             Email: user.Email,
-            id: user.StudentID,
+            id: user.StudentsID,
             token: token
         });
     } catch (error) {
